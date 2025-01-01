@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Message from "./pages/Message";
 
 function App() {
   return (
-    <h1 className="fixed z-50 mt-9 hidden bg-red-400">
-      <span>Link Message</span>
-    </h1>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/:id" element={<Message />}></Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
