@@ -1,20 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import RotatePhoneLoader from "../ui/RotatePhoneLoader";
+import { useMessage } from "@/features/messages/useMessage";
+import { useParams } from "react-router-dom";
 
 function Message() {
+  const { link } = useParams();
+
+  const { message, isLoading } = useMessage({ link: link as string });
+
   const marqueeRef = useRef<HTMLDivElement>(null);
   const [marqueeWidth, setMarqueeWidth] = useState(0);
   const [words, setWords] = useState<string[]>([]);
-  useEffect(() => {
-    function fetchData() {
-      const message =
-        "The  or JSX The  or JSXThe  or JSXThe  or JSXThe  or JSXThe  or JSXThe  or JSXThe  or JSX";
+  const [desktop, setDesktop] = useState<string | boolean>(
+    () => window.matchMedia("(min-width:1280px)").matches,
+  );
 
-      const wordsTemp = message.split(" ");
-      setWords(wordsTemp);
-    }
-    fetchData();
-  }, []);
+  useEffect(() => {
+    const wordsTemp = message?.message?.split(" ");
+    setWords(wordsTemp);
+  }, [isLoading]);
 
   useEffect(() => {
     if (marqueeRef.current && words.length) {
@@ -24,29 +28,39 @@ function Message() {
     }
   }, [words]);
 
+  function handleShowingMessage() {
+    marqueeRef.current?.classList.add("active");
+
+    if (window.matchMedia("(min-width:1280px)").matches) {
+      setDesktop("yes");
+    }
+  }
+
+  if (isLoading || !words) return <p>Loading...</p>;
+
   return (
     <>
-    <RotatePhoneLoader onClick={() => marqueeRef.current?.classList.add('active') } />
-    <div
-      className={`${marqueeWidth ? "w-full" : ""} fixed right-0 top-0 h-full overflow-hidden bg-black`}
-    >
+      <RotatePhoneLoader isDesktop={desktop} onClick={handleShowingMessage} />
       <div
-        ref={marqueeRef}
-        className="marquee"
-        style={{
-          ["--marquee-width" as string]: `${marqueeWidth}px`,
-          ["--marquee-duration" as string]: `${marqueeWidth ? Math.round(marqueeWidth / 5000) * 15 : 10}s`,
-        }}
+        className={`${marqueeWidth ? "w-full" : ""} fixed right-0 top-0 h-full overflow-hidden bg-black ${desktop === "yes" ? "-rotate-90" : ""}`}
       >
-        {words.map((word, index) => (
-          <span key={index} className="word">
-            {word}
-            &nbsp;
-          </span>
-        ))}
+        <div
+          ref={marqueeRef}
+          className="marquee"
+          style={{
+            ["--marquee-width" as string]: `${marqueeWidth}px`,
+            ["--marquee-duration" as string]: `${marqueeWidth ? Math.round(marqueeWidth / 5000) * 15 : 10}s`,
+          }}
+        >
+          {words.map((word, index) => (
+            <span key={index} className="word">
+              {word}
+              &nbsp;
+            </span>
+          ))}
+        </div>
       </div>
-    </div>
-      </>
+    </>
   );
 }
 
